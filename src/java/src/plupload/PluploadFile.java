@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.utils.URIUtils;
+import org.json.simple.JSONObject;
 
 public class PluploadFile /*extends Thread*/{
 
@@ -33,6 +34,7 @@ public class PluploadFile /*extends Thread*/{
 	private long chunks;		// chunks uploaded at client
 	private int chunk_server; 	// chunks uploaded at server
 	private long loaded;		// bytes uploaded
+	private JSONObject additionalParams = null;
 	
 	private String name;
 	private long size;	
@@ -129,9 +131,10 @@ public class PluploadFile /*extends Thread*/{
 		}
 	}
 	
-	public void upload(String upload_uri, int chunk_size, int retries, String cookie)
+	public void upload(String upload_uri, int chunk_size, int retries, String cookie,JSONObject params)
 			throws IOException, NoSuchAlgorithmException, URISyntaxException, ParseException {
 		log.info("upload: " + upload_uri + " " + chunk_size + " " + retries + " " + cookie);
+		this.additionalParams = params;
 		prepare(upload_uri, chunk_size, retries, cookie);
 		
 		Thread uploadThread = new Thread(){
@@ -199,7 +202,7 @@ public class PluploadFile /*extends Thread*/{
 
 	public URI getUploadUri() throws URISyntaxException {
 		String params = HttpUploader.getQueryParams(chunk, chunks, chunk_size,
-				md5hex_total, md5hex_chunk, name);
+				md5hex_total, md5hex_chunk, name,additionalParams);
 		String query = uri.getQuery() != null ? uri.getQuery() + "&" + params
 				: params;
 		URI upload_uri = URIUtils.createURI(uri.getScheme(), uri.getHost(), uri

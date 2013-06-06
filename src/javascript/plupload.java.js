@@ -48,8 +48,7 @@
           container = document.body,
           features = this.getFeatures(),
           url = uploader.settings.java_applet_url,
-          log_level = uploader.settings.log_level || /*LOG_LEVEL_ERROR*/5;
-
+          log_level = uploader.settings.log_level || /*LOG_LEVEL_ERROR*/5
       if(!features.java){
         callback({success : false});
         return;
@@ -113,7 +112,7 @@
       applet.inject(appletContainer, {
         archive: url,
         cache_archive: url,
-        cache_version: "20062012",
+        cache_version: "500620125",
         id: escape(uploader.id),
         code: 'plupload.Plupload',
         callback: 'plupload.applet.pluploadjavatrigger',
@@ -135,7 +134,7 @@
             abs_url += location.pathname.slice(0, location.pathname.lastIndexOf('/')) + '/' + settings.url;
           }
 
-          getApplet().uploadFile(lookup[file.id] + "", abs_url, document.cookie, settings.chunk_size || 0, settings.retries || 3);
+          getApplet().uploadFile(lookup[file.id] + "", abs_url, document.cookie, settings.chunk_size || 0, settings.retries || 3,settings.multipart_params == null ? escape("{}") : escape(dojo.toJson( settings.multipart_params)) );
       });
 
       uploader.bind("SelectFiles", function(up){

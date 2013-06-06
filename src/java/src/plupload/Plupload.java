@@ -2,6 +2,9 @@ package plupload;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.rmi.UnexpectedException;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -21,6 +24,9 @@ import netscape.javascript.JSObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.SystemLog;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 
 /**
  * Plupload Java runtime.
@@ -41,6 +47,7 @@ public class Plupload extends Applet2 {
 	private String uploader_id;
 	private Map<String, PluploadFile> files;
 	private int id_counter = 0;
+	
 	
 	@Override
 	public void init() {
@@ -93,19 +100,27 @@ public class Plupload extends Applet2 {
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")
 	public void uploadFile(final String id, final String url,
-			final String cookie, final int chunk_size, final int retries) {
+			final String cookie, final int chunk_size, final int retries, final String multipart_params) {
 		log.debug("uploadFile: id: " + id + " url: " + url + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
+		
+		log.debug("multipart_params : " +  multipart_params);
 		final PluploadFile file = files.get(id);
 		if (file != null) {
 			this.current_file = file;
 		}
-
 		try {
 			// Because of LiveConnect our security privileges are degraded
 			// elevate them again.
 			AccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public Object run() throws IOException, Exception {
-					file.upload(url, chunk_size, retries, cookie);
+					JSONObject additionalParams = null;
+					try {
+						Object value = JSONValue.parse(URLDecoder.decode(multipart_params,"UTF-8"));
+						additionalParams = (JSONObject)value;
+					} catch (UnsupportedEncodingException e1) {
+						log.error("error parsing/decoding multipart_params",e1);
+					}
+					file.upload(url, chunk_size, retries, cookie,additionalParams);
 					return null;
 				}
 			});

@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.json.simple.JSONObject;
 
 public class HttpUploader {
 
@@ -76,7 +78,7 @@ public class HttpUploader {
 	}
 
 	public static String getQueryParams(long chunk, long chunks, int chunk_size, String md5hex_total,
-			String md5hex_chunk, String name) {
+			String md5hex_chunk, String name, JSONObject params) {
 		List<NameValuePair> q = new ArrayList<NameValuePair>();
 		q.add(new BasicNameValuePair("chunk", Long.toString(chunk)));
 		q.add(new BasicNameValuePair("chunks", Long.toString(chunks)));
@@ -84,6 +86,12 @@ public class HttpUploader {
 		q.add(new BasicNameValuePair("md5chunk", md5hex_chunk));
 		q.add(new BasicNameValuePair("md5total", md5hex_total));
 		q.add(new BasicNameValuePair("name", name));
+		if (params != null) {
+		Iterator it = params.keySet().iterator();
+		while (it.hasNext()) {
+			String key = (String) it.next();
+			q.add(new BasicNameValuePair(key, (String)params.get(key)));		
+		}}
 		return URLEncodedUtils.format(q, "UTF-8");
 	}
 }
